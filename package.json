@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000 2>&1 | tee dev.log",
-    "build": "next build",
+    "build": "prisma db push --skip-generate && npm run db:seed && next build",
+    "db:seed": "tsx scripts/seed.ts && tsx scripts/seed-branding.ts && tsx scripts/seed-cla-pis.ts && tsx scripts/seed-rxp.ts",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
     "db:push": "prisma db push --accept-data-loss",
@@ -88,6 +89,7 @@
     "eslint": "^9",
     "eslint-config-next": "^16.1.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.12",
     "tw-animate-css": "^1.3.5",
     "typescript": "^5"
   }
