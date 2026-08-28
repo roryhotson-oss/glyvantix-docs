@@ -1,0 +1,37 @@
+# GLYvantix Docs — robots.txt
+# --------------------------------------------------------
+# Default: block all crawlers. This protects dev/staging/sandbox
+# environments from being indexed by Google, which would otherwise
+# cannibalise the production domain's rankings and trigger
+# duplicate-content penalties.
+#
+# To ALLOW indexing on production, set the SITE_INDEXABLE env var
+# to "true" in your hosting provider (Vercel, Fasthosts, etc.) and
+# use the dynamic robots route at /api/robots.ts instead of this
+# static file. That route reads SITE_INDEXABLE and returns either
+# this block-all directive or an allow-all + sitemap directive.
+#
+# The static fallback here is intentionally restrictive — when in
+# doubt, block. A dev URL that accidentally ranks is much harder
+# to fix than a production URL that doesn't rank yet.
+
+User-agent: *
+Disallow: /
+
+# Allow the major social preview crawlers so links shared on
+# Twitter / LinkedIn / Slack still get a nice card preview even
+# on a noindex environment.
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /

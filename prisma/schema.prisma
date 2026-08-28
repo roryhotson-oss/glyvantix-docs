@@ -1,0 +1,139 @@
+// This is the Prisma schema file for GLYvantix Docs.
+// GLYvantix Docs: a research/collaboration platform publishing a clinical
+// document framework for the peptide therapeutics field.
+//
+// The production deployment uses PostgreSQL (required for serverless hosts
+// such as Vercel — SQLite does not work there because there is no persistent
+// filesystem). For local development you may switch the provider back to
+// "sqlite" and use a local file path for DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  // Subscription tier: "free" | "starter" | "pro" | "business"
+  plan      String   @default("free")
+  // One-time document credits (for buying individual docs without subscription)
+  credits   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscriptions Subscription[]
+  documents     Document[]
+  purchases     Purchase[]
+}
+
+model Subscription {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Plan tier: "starter" | "pro" | "business"
+  plan       String
+  // Billing cycle: "monthly" | "yearly"
+  cycle      String   @default("monthly")
+  amount     Float
+  status     String   @default("active") // "active" | "cancelled" | "expired"
+  startedAt  DateTime @default(now())
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String
+  // Icon identifier (lucide icon name)
+  icon        String
+  // The AI prompt template (with placeholders)
+  prompt      String
+  // JSON-encoded list of field definitions for the form
+  // Each field: { name, label, type, placeholder, required }
+  fields      String
+  // Price for one-time purchase (0 = free)
+  price       Float    @default(0)
+  // Whether the template is premium (requires subscription or one-time purchase)
+  premium     Boolean  @default(false)
+  // Estimated generation time in seconds
+  estTime     Int      @default(15)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  documents Document[]
+  purchases Purchase[]
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId String?
+  template   Template? @relation(fields: [templateId], references: [id])
+  title      String
+  content    String
+  // Document type: "invoice" | "contract" | "proposal" | "letter" | "report" | "custom"
+  type       String   @default("custom")
+  // How it was acquired: "subscription" | "purchase" | "free"
+  source     String   @default("free")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Purchase {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId String?
+  template   Template? @relation(fields: [templateId], references: [id])
+  // Purchase type: "one_time" | "subscription" | "credit_pack"
+  type       String
+  amount     Float
+  // Status: "completed" | "pending" | "refunded"
+  status     String   @default("completed")
+  createdAt  DateTime @default(now())
+}
+
+model Branding {
+  id           String   @id @default(cuid())
+  // Singleton record — only one branding row. Use key "default".
+  key          String   @unique @default("default")
+  // Company / brand name shown in header, footer, dashboard, letterheads.
+  companyName  String   @default("GLYvantix Docs")
+  // Short tagline under the logo.
+  tagline      String   @default("AI document studio")
+  // A short URL-safe slug for download filenames etc.
+  slug         String   @default("glyvantix-docs")
+  // Contact email shown in footer + used in document watermarks.
+  contactEmail String   @default("hello@glyvantix.app")
+  // Logo image — either a data: URL (uploaded SVG/PNG) or an absolute URL.
+  // Empty string = render a default monogram (first letters of companyName).
+  logoUrl      String   @default("")
+  // Lucide icon name used as the monogram when no logo is set (e.g. "Sparkles", "Feather", "FileText").
+  monogramIcon String   @default("Sparkles")
+  // Font family for headings — one of: "serif" | "sans" | "mono".
+  headingFont  String   @default("serif")
+  // Font family for body — one of: "serif" | "sans" | "mono".
+  bodyFont     String   @default("sans")
+  // Brand accent color as a hex string, e.g. "#0f172a". Used for buttons, highlights, badges.
+  accentColor  String   @default("#0f172a")
+  // Secondary accent color (amber/emerald highlight), hex string.
+  accentColor2 String   @default("#f59e0b")
+  // Whether to show a watermark on generated documents (user email + company name + timestamp).
+  watermarkEnabled Boolean @default(true)
+  // Whether free (non-subscribed) users see only the first paragraph and must upgrade to unlock the full doc.
+  paywallEnabled Boolean @default(false)
+  // Whether right-click + text selection on document previews is disabled.
+  copyProtectEnabled Boolean @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
