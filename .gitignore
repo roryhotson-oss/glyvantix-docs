@@ -51,3 +51,4 @@ dev.db
 
 # uploaded source archives stay local and are never committed
 /uploads/*.zip
+/uploads/*.md
