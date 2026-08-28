@@ -48,3 +48,6 @@ server.log
 # local SQLite db (if you switch provider to sqlite for local dev)
 *.db
 dev.db
+
+# uploaded source archives stay local and are never committed
+/uploads/*.zip
