@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getCurrentUser } from '@/lib/current-user';
 
 const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
   starter: { monthly: 19, yearly: 190 },
@@ -33,18 +34,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid cycle' }, { status: 400 });
     }
 
-    const user = await db.user.findUnique({
-      where: { email: 'demo@glyvantix.app' },
-      include: {
-        subscriptions: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-      },
-    });
+    const user = await getCurrentUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const amount = PLAN_PRICES[plan][cycle as 'monthly' | 'yearly'];

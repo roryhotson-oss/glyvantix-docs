@@ -176,7 +176,10 @@ See `.env.example` for the full template. The two REQUIRED for production:
 
 Future additions (not required for first deploy):
 - `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` — when you re-introduce commerce
-- `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — when you add real users
+
+Production authentication uses Google OAuth through NextAuth. Set `NEXTAUTH_SECRET`, `NEXTAUTH_URL`,
+`GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` in Vercel, and add the callback URL
+`https://docs.glyvantix.co.uk/api/auth/callback/google` to the Google OAuth client.
 
 ---
 

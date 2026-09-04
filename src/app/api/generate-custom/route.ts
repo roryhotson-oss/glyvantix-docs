@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createDocumentCompletion } from '@/lib/ai';
+import { getCurrentUser } from '@/lib/current-user';
 
 // Free-form AI document generation.
 // The user types whatever they want in natural language and the AI
@@ -42,11 +43,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = await db.user.findUnique({
-      where: { email: 'demo@glyvantix.app' },
-    });
+    const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     // Free-form generation is a premium feature:

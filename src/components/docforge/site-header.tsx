@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Crown, Menu, Settings2, Zap } from "lucide-react";
 
@@ -127,6 +128,7 @@ export function SiteHeader({
   loadingUser,
 }: SiteHeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const router = useRouter();
   const { branding } = useBrandingState();
 
   const initials =
@@ -136,6 +138,24 @@ export function SiteHeader({
       .map((p) => p[0])
       .join("")
       .toUpperCase() ?? "DU";
+
+  function startSignIn() {
+    router.push("/api/auth/signin/google");
+  }
+
+  async function handleSignOut() {
+    const csrfResponse = await fetch("/api/auth/csrf");
+    const { csrfToken } = (await csrfResponse.json()) as { csrfToken: string };
+    await fetch("/api/auth/signout", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        csrfToken,
+        callbackUrl: window.location.origin,
+      }),
+    });
+    window.location.reload();
+  }
 
   function go(tab: TabId) {
     onTabChange(tab);
@@ -203,6 +223,11 @@ export function SiteHeader({
 
         {/* Right: plan badge + credits + avatar (desktop) */}
         <div className="hidden items-center gap-2 md:flex">
+          {!user && !loadingUser ? (
+            <Button variant="outline" size="sm" onClick={startSignIn}>
+              Sign in
+            </Button>
+          ) : null}
           {user && (
             <Badge
               className={cn(
@@ -226,6 +251,11 @@ export function SiteHeader({
               </AvatarFallback>
             </Avatar>
           )}
+          {user ? (
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              Sign out
+            </Button>
+          ) : null}
         </div>
 
         {/* Mobile: credits + hamburger */}
@@ -310,6 +340,13 @@ export function SiteHeader({
                     ) : null}
                     {planLabel(user.plan)} plan
                   </Badge>
+                  <Button
+                    className="mt-3 w-full"
+                    variant="outline"
+                    onClick={handleSignOut}
+                  >
+                    Sign out
+                  </Button>
                 </div>
               )}
             </SheetContent>

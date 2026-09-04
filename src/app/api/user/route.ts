@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getCurrentUser } from '@/lib/current-user';
 
 export async function GET() {
   try {
-    const user = await db.user.findUnique({
-      where: { email: 'demo@glyvantix.app' },
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const userWithSubscriptions = await db.user.findUnique({
+      where: { id: user.id },
       include: {
         subscriptions: {
           orderBy: { createdAt: 'desc' },
@@ -13,7 +19,7 @@ export async function GET() {
       },
     });
 
-    if (!user) {
+    if (!userWithSubscriptions) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
@@ -24,16 +30,16 @@ export async function GET() {
       where: { userId: user.id },
     });
 
-    const activeSubscription = user.subscriptions[0] ?? null;
+    const activeSubscription = userWithSubscriptions.subscriptions[0] ?? null;
 
     return NextResponse.json({
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        plan: user.plan,
-        credits: user.credits,
-        createdAt: user.createdAt,
+        id: userWithSubscriptions.id,
+        email: userWithSubscriptions.email,
+        name: userWithSubscriptions.name,
+        plan: userWithSubscriptions.plan,
+        credits: userWithSubscriptions.credits,
+        createdAt: userWithSubscriptions.createdAt,
       },
       subscription: activeSubscription
         ? {

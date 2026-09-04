@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createDocumentCompletion } from '@/lib/ai';
+import { getCurrentUser } from '@/lib/current-user';
 
 export async function POST(req: Request) {
   try {
@@ -28,11 +29,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }
 
-    const user = await db.user.findUnique({
-      where: { email: 'demo@glyvantix.app' },
-    });
+    const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const isSubscribed = user.plan !== 'free';

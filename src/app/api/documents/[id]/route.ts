@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getCurrentUser } from '@/lib/current-user';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -7,11 +8,9 @@ export async function GET(_req: Request, { params }: Params) {
   try {
     const { id } = await params;
 
-    const user = await db.user.findUnique({
-      where: { email: 'demo@glyvantix.app' },
-    });
+    const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const document = await db.document.findUnique({
@@ -43,11 +42,9 @@ export async function DELETE(_req: Request, { params }: Params) {
   try {
     const { id } = await params;
 
-    const user = await db.user.findUnique({
-      where: { email: 'demo@glyvantix.app' },
-    });
+    const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const document = await db.document.findUnique({ where: { id } });
