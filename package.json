@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000 2>&1 | tee dev.log",
-    "build": "prisma db push --skip-generate && npm run db:seed && next build",
+    "build": "next build",
     "db:seed": "tsx scripts/seed.ts && tsx scripts/seed-branding.ts && tsx scripts/seed-cla-pis.ts && tsx scripts/seed-rxp.ts",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
