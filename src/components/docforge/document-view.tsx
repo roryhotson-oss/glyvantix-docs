@@ -7,7 +7,7 @@
 // copy-protection (disabled right-click + text selection), and an optional
 // paywall that shows only the first paragraph to free users.
 
-import { useMemo, type MouseEvent, type ReactNode } from "react";
+import { useMemo, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import { AlertTriangle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -176,9 +176,29 @@ export function DocumentView({
         </div>
       )}
 
-      {/* Document body (with watermark overlay) */}
-      <div className="relative">
-        <div className={cn(bodyFontClass(branding.bodyFont))}>
+      {/* Document body is presented as a printable paper sheet rather than a raw text block. */}
+      <div
+        className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10"
+        style={{
+          "--doc-accent": branding.accentColor,
+          "--doc-accent-2": branding.accentColor2,
+        } as CSSProperties}
+      >
+        <div className="h-2 w-full" style={{ backgroundColor: branding.accentColor }} />
+        {!compact && (
+          <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-4 sm:px-10">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                Controlled research document
+              </p>
+              <p className="mt-1 text-xs text-slate-500">Review before institutional adoption</p>
+            </div>
+            <span className="rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white" style={{ backgroundColor: branding.accentColor2 }}>
+              Draft template
+            </span>
+          </div>
+        )}
+        <div className={cn("px-6 py-7 sm:px-10 sm:py-10", bodyFontClass(branding.bodyFont))}>
           <Markdown content={preview} />
         </div>
 
