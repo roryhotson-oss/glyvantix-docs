@@ -24,7 +24,7 @@ const indexable = process.env.SITE_INDEXABLE === "true";
 // product (not the old commercial copy).
 const siteTitle = "GLYvantix Docs — Research Framework for Peptide Therapeutics Consent";
 const siteDescription =
-  "GLYvantix Research publishes a 30-document consent, patient information and prescribing framework for the peptide therapeutics field. Localise any document to your institution, then collaborate on the next version.";
+  "GLYvantix Docs provides a reviewed research-document framework for peptide research governance, consent records, patient information, and professional sample record-keeping. Templates require local institutional review before use.";
 
 export const metadata: Metadata = {
   // When SITE_INDEXABLE is not "true", tell every search engine to drop the

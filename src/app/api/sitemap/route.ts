@@ -1,8 +1,7 @@
 // Dynamic sitemap.xml route.
 //
-// Returns a single-page sitemap pointing at the canonical URL set via
-// SITE_CANONICAL_URL. Since this is a single-page app (everything is on `/`),
-// the sitemap is intentionally minimal — one URL, last-modified today.
+// Returns a public overview sitemap only. Individual template data is fetched
+// behind the application API and must not be treated as public SEO content.
 //
 // On production: SITE_CANONICAL_URL must be set (e.g. https://docs.glyvantix.com)
 // and SITE_INDEXABLE="true". On any other environment, the route returns 404

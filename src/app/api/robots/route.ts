@@ -38,6 +38,10 @@ export function GET() {
 
   const allowAll = `User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /private
+Disallow: /admin
 
 Sitemap: ${canonical}/sitemap.xml
 `;
