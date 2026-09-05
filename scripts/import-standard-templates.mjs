@@ -85,11 +85,25 @@ try {
     const sourceText = extractText(file).slice(0, 120000);
     const prompt = `${notice}\n\nSource filename: ${sourceFilename}\n\nCreate a professional research/sample record-keeping template based on the source document below. Preserve its structure, tables, checklists, and placeholders, but do not claim legal compliance or approval. Do not add clinical advice or patient-specific instructions. Require local professional review before use.\n\nSOURCE DOCUMENT:\n${sourceText}`;
 
-    await db.template.upsert({
-      where: { id: `standard-${code.toLowerCase()}` },
-      update: { name: title, description: `Research/sample ${category.toLowerCase()} template for qualified professional review and institutional record-keeping.`, category, prompt, fields, price: 0, premium: false },
-      create: { id: `standard-${code.toLowerCase()}`, name: title, description: `Research/sample ${category.toLowerCase()} template for qualified professional review and institutional record-keeping.`, category, icon: "FileText", prompt, fields, price: 0, premium: false, estTime: 20 },
+    const existing = await db.template.findFirst({
+      where: { name: { startsWith: code } },
+      select: { id: true },
     });
+    const data = {
+      name: title,
+      description: `Research/sample ${category.toLowerCase()} template for qualified professional review and institutional record-keeping.`,
+      category,
+      prompt,
+      fields,
+      price: 0,
+      premium: false,
+      estTime: 20,
+    };
+    if (existing) {
+      await db.template.update({ where: { id: existing.id }, data });
+    } else {
+      await db.template.create({ id: `standard-${code.toLowerCase()}`, data: { ...data, icon: "FileText" } });
+    }
     imported += 1;
   }
   console.log(`Imported ${imported} standard templates from ${basename(archivePath)}.`);
