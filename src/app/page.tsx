@@ -169,10 +169,8 @@ export default function Home() {
                 <TemplatesTab
                   templates={templates}
                   loadingTemplates={loadingTemplates}
-                  user={user}
                   onSelectTemplate={useTemplateAndNavigate}
                   onNavigate={navigate}
-                  onUserChange={refreshUser}
                 />
               </TabsContent>
 

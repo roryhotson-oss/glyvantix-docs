@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2, Lock, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Lock, Search, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,20 +31,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-import { buyTemplate, type TabId } from "./api";
+import { type TabId } from "./api";
 import { TemplateIcon, iconTintFor } from "./template-icon";
-import type { Template, User } from "./types";
+import type { Template } from "./types";
+import { buildSupplyEnquiryUrl } from "@/lib/supply-enquiry";
 
 interface TemplatesTabProps {
   templates: Template[];
   loadingTemplates: boolean;
-  user: User | null;
   onSelectTemplate: (t: Template) => void;
   onNavigate: (tab: TabId) => void;
-  onUserChange: () => void;
 }
 
 const CATEGORIES = ["All", "Business", "Legal", "Marketing", "Personal", "HR"];
@@ -52,15 +50,12 @@ const CATEGORIES = ["All", "Business", "Legal", "Marketing", "Personal", "HR"];
 export function TemplatesTab({
   templates,
   loadingTemplates,
-  user,
   onSelectTemplate,
   onNavigate,
-  onUserChange,
 }: TemplatesTabProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("All");
   const [purchaseTarget, setPurchaseTarget] = useState<Template | null>(null);
-  const [buying, setBuying] = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -76,22 +71,7 @@ export function TemplatesTab({
   }, [templates, search, category]);
 
   async function handleBuy(t: Template) {
-    setBuying(true);
-    try {
-      await buyTemplate(t.id);
-      toast.success(`Bought "${t.name}" — 1 credit added`);
-      onUserChange();
-      setPurchaseTarget(null);
-      // Drop straight into the builder with this template.
-      onSelectTemplate(t);
-      onNavigate("builder");
-    } catch (err) {
-      toast.error("Could not complete purchase", {
-        description: err instanceof Error ? err.message : undefined,
-      });
-    } finally {
-      setBuying(false);
-    }
+    window.location.assign(buildSupplyEnquiryUrl(t.name, t.price));
   }
 
   function handleUse(t: Template) {
@@ -253,7 +233,7 @@ export function TemplatesTab({
       {/* Buy dialog */}
       <Dialog
         open={purchaseTarget !== null}
-        onOpenChange={(o) => !buying && !o && setPurchaseTarget(null)}
+        onOpenChange={(o) => !o && setPurchaseTarget(null)}
       >
         <DialogContent>
           <DialogHeader>
@@ -264,16 +244,17 @@ export function TemplatesTab({
             <DialogDescription>
               {purchaseTarget && (
                 <>
-                  You'll be charged{" "}
+                  This opens a GLYvantix supply enquiry for{" "}
                   <strong className="text-foreground">
                     ${purchaseTarget.price.toFixed(2)}
                   </strong>{" "}
-                  for{" "}
+                  with bank-transfer payment instructions confirmed directly.
+                  You will not be charged in this window.
+                  {" "}
                   <strong className="text-foreground">
                     {purchaseTarget.name}
                   </strong>
-                  . You'll receive 1 credit to generate this document — no
-                  subscription required.
+                  .
                 </>
               )}
             </DialogDescription>
@@ -282,24 +263,14 @@ export function TemplatesTab({
             <Button
               variant="outline"
               onClick={() => setPurchaseTarget(null)}
-              disabled={buying}
             >
               Cancel
             </Button>
             <Button
               onClick={() => purchaseTarget && handleBuy(purchaseTarget)}
-              disabled={buying || !purchaseTarget}
+              disabled={!purchaseTarget}
             >
-              {buying ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                purchaseTarget
-                  ? `Buy for $${purchaseTarget.price.toFixed(2)}`
-                  : "Buy"
-              )}
+              {purchaseTarget ? "Open supply enquiry" : "Open enquiry"}
             </Button>
           </DialogFooter>
         </DialogContent>

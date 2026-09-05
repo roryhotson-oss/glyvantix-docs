@@ -54,12 +54,7 @@ import {
   validateTemplateFields,
 } from "@/lib/template-validation";
 
-import {
-  buyTemplate,
-  generateCustomDocument,
-  generateDocument,
-  type TabId,
-} from "./api";
+import { generateCustomDocument, generateDocument, type TabId } from "./api";
 import { DocumentView } from "./document-view";
 import {
   ClinicianAttestation,
@@ -67,6 +62,7 @@ import {
 } from "./clinician-attestation";
 import { TemplateIcon, iconTintFor } from "./template-icon";
 import type { DocforgeDocument, Template, User } from "./types";
+import { buildSupplyEnquiryUrl } from "@/lib/supply-enquiry";
 
 interface BuilderTabProps {
   templates: Template[];
@@ -146,7 +142,6 @@ export function BuilderTab({
     price: number;
     isCustom: boolean;
   } | null>(null);
-  const [buying, setBuying] = useState(false);
 
   // Free-form ("ask the AI anything") mode state.
   const [customMode, setCustomMode] = useState(false);
@@ -301,29 +296,15 @@ export function BuilderTab({
     }
   }
 
-  async function handleBuyAndRetry() {
+  function handleSupplyEnquiry() {
     if (!purchasePrompt) return;
-    // Custom mode has no template to buy — route the user to pricing instead.
     if (purchasePrompt.isCustom) {
       setPurchasePrompt(null);
       onNavigate("pricing");
       return;
     }
     if (!selectedTemplate) return;
-    setBuying(true);
-    try {
-      await buyTemplate(purchasePrompt.templateId);
-      toast.success("Template purchased — 1 credit added");
-      onUserChange();
-      setPurchasePrompt(null);
-      await handleGenerate();
-    } catch (err) {
-      toast.error("Could not complete purchase", {
-        description: err instanceof Error ? err.message : undefined,
-      });
-    } finally {
-      setBuying(false);
-    }
+    window.location.assign(buildSupplyEnquiryUrl(selectedTemplate.name, purchasePrompt.price));
   }
 
   function handleCopy() {
@@ -986,7 +967,7 @@ export function BuilderTab({
       {/* Purchase-required dialog (shared) */}
       <Dialog
         open={purchasePrompt !== null}
-        onOpenChange={(o) => !buying && !o && setPurchasePrompt(null)}
+        onOpenChange={(o) => !o && setPurchasePrompt(null)}
       >
         <DialogContent>
           <DialogHeader>
@@ -1028,7 +1009,6 @@ export function BuilderTab({
                 setPurchasePrompt(null);
                 onNavigate("pricing");
               }}
-              disabled={buying}
             >
               {purchasePrompt?.isCustom
                 ? "See plans & credit packs"
@@ -1036,19 +1016,13 @@ export function BuilderTab({
             </Button>
             {!purchasePrompt?.isCustom && (
               <Button
-                onClick={handleBuyAndRetry}
-                disabled={buying}
+                onClick={handleSupplyEnquiry}
                 className="gap-2"
               >
-                {buying ? (
+                {purchasePrompt ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Buying...
-                  </>
-                ) : purchasePrompt ? (
-                  <>
-                    <Lock className="h-4 w-4" />
-                    Buy for ${purchasePrompt.price.toFixed(2)}
+                      <ArrowRight className="h-4 w-4" />
+                      Open supply enquiry
                   </>
                 ) : null}
               </Button>
