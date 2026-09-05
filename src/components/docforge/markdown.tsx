@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
@@ -18,7 +19,7 @@ export function Markdown({ content, className }: MarkdownProps) {
   return (
     <div
       className={cn(
-        "doc-markdown max-w-none break-words text-[0.94rem] leading-7 text-slate-700",
+        "doc-markdown max-w-none break-words text-[0.94rem] leading-7 text-slate-700 print:text-[0.9rem]",
         className
       )}
     >
@@ -27,18 +28,18 @@ export function Markdown({ content, className }: MarkdownProps) {
         components={{
           h1: ({ node, ...props }) => (
             <h1
-              className="mb-5 mt-2 border-b border-slate-200 pb-4 font-serif text-3xl font-bold tracking-tight text-slate-950"
+              className="mb-7 mt-1 border-b-2 border-[var(--doc-accent)]/25 pb-5 font-serif text-[2rem] font-bold leading-tight tracking-[-0.02em] text-slate-950 sm:text-[2.35rem]"
               {...props}
             />
           ),
           h2: ({ node, ...props }) => (
             <h2
-              className="mb-3 mt-9 flex items-center gap-3 border-b border-slate-200 pb-2 text-xl font-bold tracking-tight text-slate-950 before:h-5 before:w-1 before:rounded-full before:bg-[var(--doc-accent)]"
+              className="mb-4 mt-10 flex scroll-mt-6 items-center gap-3 border-b border-slate-200 pb-3 text-[1.08rem] font-bold uppercase tracking-[0.08em] text-slate-950 before:h-6 before:w-1 before:rounded-full before:bg-[var(--doc-accent)] first:mt-0"
               {...props}
             />
           ),
           h3: ({ node, ...props }) => (
-            <h3 className="mb-2 mt-6 text-lg font-semibold text-slate-900" {...props} />
+            <h3 className="mb-2 mt-7 text-base font-bold text-slate-900" {...props} />
           ),
           h4: ({ node, ...props }) => (
             <h4 className="text-base font-semibold mt-3 mb-1" {...props} />
@@ -50,16 +51,24 @@ export function Markdown({ content, className }: MarkdownProps) {
             <h6 className="text-sm font-medium mt-2 mb-1" {...props} />
           ),
           p: ({ node, ...props }) => (
-            <p className="my-3 leading-7" {...props} />
+            <p className="my-3 leading-7 [&+p]:mt-2" {...props} />
           ),
           ul: ({ node, ...props }) => (
-            <ul className="list-disc pl-6 space-y-1 my-3" {...props} />
+            <ul className="my-4 list-disc space-y-1.5 pl-6" {...props} />
           ),
           ol: ({ node, ...props }) => (
-            <ol className="list-decimal pl-6 space-y-1 my-3" {...props} />
+            <ol className="my-4 list-decimal space-y-1.5 pl-6" {...props} />
           ),
           li: ({ node, ...props }) => (
-            <li className="leading-relaxed pl-1" {...props} />
+            <li className="pl-1 leading-relaxed marker:text-[var(--doc-accent)]" {...props} />
+          ),
+          input: ({ node, ...props }) => (
+            <input
+              type="checkbox"
+              readOnly
+              className="mr-2 h-4 w-4 translate-y-0.5 accent-[var(--doc-accent)]"
+              {...props}
+            />
           ),
           strong: ({ node, ...props }) => (
             <strong className="font-semibold text-foreground" {...props} />
@@ -67,7 +76,7 @@ export function Markdown({ content, className }: MarkdownProps) {
           em: ({ node, ...props }) => <em className="italic" {...props} />,
           blockquote: ({ node, ...props }) => (
             <blockquote
-              className="my-5 rounded-r-xl border-l-4 border-[var(--doc-accent-2)] bg-amber-50 px-5 py-3 text-slate-700"
+              className="my-6 rounded-r-xl border-l-4 border-[var(--doc-accent-2)] bg-amber-50/80 px-5 py-4 text-[0.92rem] text-slate-700 shadow-sm"
               {...props}
             />
           ),
@@ -84,7 +93,7 @@ export function Markdown({ content, className }: MarkdownProps) {
           ),
           pre: ({ node, children, ...props }) => (
             <pre
-              className="rounded-lg bg-muted p-4 overflow-x-auto my-4 font-mono text-xs leading-relaxed"
+              className="my-5 overflow-x-auto rounded-lg bg-slate-950 p-4 font-mono text-xs leading-relaxed text-slate-100"
               {...props}
             >
               {children}
@@ -99,8 +108,8 @@ export function Markdown({ content, className }: MarkdownProps) {
             />
           ),
           table: ({ node, ...props }) => (
-            <div className="my-6 overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-              <table className="w-full min-w-[34rem] border-collapse text-sm" {...props} />
+            <div className="my-7 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:shadow-none">
+              <table className="w-full min-w-[34rem] border-collapse text-[0.83rem] leading-6" {...props} />
             </div>
           ),
           thead: ({ node, ...props }) => (
@@ -108,7 +117,7 @@ export function Markdown({ content, className }: MarkdownProps) {
           ),
           th: ({ node, ...props }) => (
             <th
-              className="border-b border-white/20 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider"
+              className="border-b border-white/20 px-4 py-3 text-left text-[0.68rem] font-bold uppercase tracking-[0.1em]"
               {...props}
             />
           ),
@@ -119,10 +128,10 @@ export function Markdown({ content, className }: MarkdownProps) {
             <tr className="even:bg-slate-50/70" {...props} />
           ),
           td: ({ node, ...props }) => (
-            <td className="border-b border-slate-100 px-4 py-3 align-top" {...props} />
+            <td className="border-b border-slate-100 px-4 py-3 align-top text-slate-700" {...props} />
           ),
           hr: ({ node, ...props }) => (
-            <hr className="border-border my-6" {...props} />
+            <hr className="my-8 border-0 border-t-2 border-dashed border-slate-200" {...props} />
           ),
         }}
       >
