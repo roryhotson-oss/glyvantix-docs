@@ -172,6 +172,18 @@ export function HomeTab({ onNavigate, templatesCount }: HomeTabProps) {
             next version.
           </motion.p>
 
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="mx-auto mt-4 max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+          >
+            GLYvantix builds intelligence-led systems that help organisations organise
+            information, verify evidence, and make better-informed decisions. Users and
+            adopting organisations remain responsible for compliance, localisation,
+            institutional review, and authorised use of every document or generated output.
+          </motion.p>
+
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
