@@ -2,7 +2,9 @@
 
 **A research/collaboration platform publishing a 30-document clinical framework for the peptide therapeutics field.**
 
-GLYvantix Docs is a Next.js 16 application that lets academic medical centres, NHS trusts, university research units and licensed clinical practices localise a peer-reviewed framework of consent, patient information and prescribing documents to their institution, then seek collaboration on the next version.
+GLYvantix Docs is a separate Next.js 16 research-document workspace in the GLYvantix ecosystem. It lets academic medical centres, NHS trusts, university research units and licensed clinical practices localise a reviewed framework of consent, patient information and prescribing documents to their institution, then seek collaboration on the next version.
+
+The live workspace is backed by Supabase PostgreSQL and currently exposes 78 seeded templates: 12 Consent & Legal Authorisation, 11 Patient Information, 7 Prescribing/Pharmacy/Dosing, and 36 general business, legal, marketing, HR, and personal templates. Production authentication uses Google OAuth through NextAuth; generated documents and user records are protected by the authenticated session boundary.
 
 The framework is published for adoption and localisation only. Every generated document is a **template** — it must be reviewed and approved by the adopting institution's legal, pharmacy, information-governance and ethics functions before use with any patient.
 
