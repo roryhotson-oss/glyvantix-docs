@@ -19,7 +19,10 @@ export async function GET() {
       estTime: t.estTime,
     }));
 
-    return NextResponse.json({ templates: parsed });
+    return NextResponse.json(
+      { templates: parsed },
+      { headers: { 'Cache-Control': 'private, no-store, max-age=0' } },
+    );
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });

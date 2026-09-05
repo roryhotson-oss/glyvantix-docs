@@ -16,18 +16,21 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({
-      documents: documents.map((d) => ({
-        id: d.id,
-        title: d.title,
-        content: d.content,
-        type: d.type,
-        source: d.source,
-        templateId: d.templateId,
-        templateName: d.template?.name ?? null,
-        createdAt: d.createdAt,
-      })),
-    });
+    return NextResponse.json(
+      {
+        documents: documents.map((d) => ({
+          id: d.id,
+          title: d.title,
+          content: d.content,
+          type: d.type,
+          source: d.source,
+          templateId: d.templateId,
+          templateName: d.template?.name ?? null,
+          createdAt: d.createdAt,
+        })),
+      },
+      { headers: { 'Cache-Control': 'private, no-store, max-age=0' } },
+    );
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });
