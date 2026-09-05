@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createDocumentCompletion } from '@/lib/ai';
 import { getCurrentUser } from '@/lib/current-user';
+import { validateCustomPrompt } from '@/lib/template-validation';
 
 // Free-form AI document generation.
 // The user types whatever they want in natural language and the AI
@@ -30,15 +31,10 @@ export async function POST(req: Request) {
     const prompt: string | undefined = body?.prompt;
     const customTitle: string | undefined = body?.title;
 
-    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+    const promptError = validateCustomPrompt(prompt);
+    if (promptError) {
       return NextResponse.json(
-        { error: 'Please describe what document you want to create.' },
-        { status: 400 }
-      );
-    }
-    if (prompt.length > 8000) {
-      return NextResponse.json(
-        { error: 'Prompt is too long (max 8000 characters).' },
+        { error: promptError },
         { status: 400 }
       );
     }

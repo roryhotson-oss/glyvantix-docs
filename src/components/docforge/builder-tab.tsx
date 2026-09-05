@@ -48,6 +48,11 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  fieldKind,
+  validateCustomPrompt,
+  validateTemplateFields,
+} from "@/lib/template-validation";
 
 import {
   buyTemplate,
@@ -183,7 +188,13 @@ export function BuilderTab({
     });
   }, [selectedTemplate, fields, requiredFields]);
 
-  const customPromptTooShort = customPrompt.trim().length < 10;
+  const fieldErrors = useMemo(
+    () => (selectedTemplate ? validateTemplateFields(selectedTemplate.fields, fields) : {}),
+    [selectedTemplate, fields]
+  );
+
+  const customPromptError = validateCustomPrompt(customPrompt);
+  const customPromptTooShort = Boolean(customPromptError);
 
   function startProgressAnimation(estSeconds: number) {
     if (progressTimer.current) clearInterval(progressTimer.current);
@@ -240,7 +251,10 @@ export function BuilderTab({
   }
 
   async function handleGenerate() {
-    if (!selectedTemplate || missingRequired) return;
+    if (!selectedTemplate || missingRequired || Object.keys(fieldErrors).length > 0) {
+      toast.error("Please correct the highlighted fields before generating.");
+      return;
+    }
     // Clinical templates require the clinician attestation gate.
     const isClinical = CLINICAL_CATEGORIES.has(selectedTemplate.category);
     const doGenerate = async () => {
@@ -265,7 +279,10 @@ export function BuilderTab({
   }
 
   async function handleGenerateCustom() {
-    if (customPromptTooShort) return;
+    if (customPromptTooShort) {
+      toast.error(customPromptError ?? "Please enter a valid document request.");
+      return;
+    }
     // Free-form generation tends to take a touch longer than structured templates.
     startProgressAnimation(16);
     try {
@@ -554,8 +571,8 @@ export function BuilderTab({
                   />
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>
-                      {customPrompt.trim().length < 10
-                        ? "Add a little more detail (min 10 characters)."
+                      {customPromptError
+                        ? customPromptError
                         : "Tip: include names, dates, tone and any must-have details."}
                     </span>
                     <span>{customPrompt.length.toLocaleString()} / 8,000</span>
@@ -768,6 +785,8 @@ export function BuilderTab({
                 {selectedTemplate.fields.map((f) => {
                   const id = `field-${f.name}`;
                   const value = fields[f.name] ?? "";
+                  const error = fieldErrors[f.name];
+                  const kind = fieldKind(f);
                   const isSelect = f.type === "select";
                   const options = isSelect
                     ? (f.placeholder ?? "")
@@ -789,6 +808,7 @@ export function BuilderTab({
                           rows={4}
                           placeholder={f.placeholder}
                           value={value}
+                          aria-invalid={Boolean(error)}
                           onChange={(e) =>
                             setFields((s) => ({ ...s, [f.name]: e.target.value }))
                           }
@@ -800,7 +820,7 @@ export function BuilderTab({
                             setFields((s) => ({ ...s, [f.name]: v }))
                           }
                         >
-                          <SelectTrigger id={id}>
+                          <SelectTrigger id={id} aria-invalid={Boolean(error)}>
                             <SelectValue
                               placeholder={
                                 f.placeholder?.startsWith("Choose")
@@ -820,14 +840,17 @@ export function BuilderTab({
                       ) : (
                         <Input
                           id={id}
-                          type={f.type === "email" ? "email" : "text"}
+                          type={kind === "email" ? "email" : "text"}
+                          inputMode={kind === "number" ? "decimal" : kind === "tel" ? "tel" : undefined}
                           placeholder={f.placeholder}
                           value={value}
+                          aria-invalid={Boolean(error)}
                           onChange={(e) =>
                             setFields((s) => ({ ...s, [f.name]: e.target.value }))
                           }
                         />
                       )}
+                      {error && <p className="text-xs text-rose-600">{error}</p>}
                     </div>
                   );
                 })}

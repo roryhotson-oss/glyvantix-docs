@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createDocumentCompletion } from '@/lib/ai';
 import { getCurrentUser } from '@/lib/current-user';
+import { validateTemplateFields } from '@/lib/template-validation';
 
 export async function POST(req: Request) {
   try {
@@ -27,6 +28,25 @@ export async function POST(req: Request) {
     });
     if (!template) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+    }
+
+    const templateFields: Array<{
+      name: string;
+      label: string;
+      type: string;
+      required?: boolean;
+    }> = JSON.parse(template.fields);
+    const allowedNames = new Set(templateFields.map((field) => field.name));
+    const unknownField = Object.keys(fields).find((name) => !allowedNames.has(name));
+    if (unknownField) {
+      return NextResponse.json({ error: `Unknown template field: ${unknownField}` }, { status: 400 });
+    }
+    const fieldErrors = validateTemplateFields(templateFields, fields);
+    if (Object.keys(fieldErrors).length > 0) {
+      return NextResponse.json(
+        { error: 'Please correct the highlighted fields.', fieldErrors },
+        { status: 400 }
+      );
     }
 
     const user = await getCurrentUser();
