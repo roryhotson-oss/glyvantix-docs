@@ -163,6 +163,12 @@ export function CustomizeTab() {
       });
       return;
     }
+    if (!["image/png", "image/svg+xml", "image/jpeg", "image/webp"].includes(file.type)) {
+      toast.error("Unsupported logo format", {
+        description: "Please upload a PNG, SVG, JPEG, or WebP image.",
+      });
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = String(reader.result ?? "");
