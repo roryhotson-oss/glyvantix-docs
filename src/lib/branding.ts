@@ -79,9 +79,19 @@ function isValidLogoDataUrl(value: string): boolean {
         bytes[11] === 0x50
       );
     case 'image/svg+xml': {
-      const svg = bytes.toString('utf8');
+      let svg = bytes.toString('utf8').trimStart();
+      if (svg.startsWith('<?xml')) {
+        const declarationEnd = svg.indexOf('?>');
+        if (declarationEnd < 0) return false;
+        svg = svg.slice(declarationEnd + 2).trimStart();
+      }
+      while (svg.startsWith('<!--')) {
+        const commentEnd = svg.indexOf('-->');
+        if (commentEnd < 0) return false;
+        svg = svg.slice(commentEnd + 3).trimStart();
+      }
       return (
-        /^\s*(?:<\?xml[^>]*>\s*)?(?:<!--[\s\S]*?-->\s*)*<svg(?:\s|>)/i.test(svg) &&
+        /^<svg(?:\s|>)/i.test(svg) &&
         !/<script\b|on[a-z]+\s*=|javascript:/i.test(svg)
       );
     }
