@@ -10,7 +10,8 @@
 -- the Supabase dashboard (Database -> Extensions -> pg_cron). On Supabase the
 -- pg_cron extension is available on the default "postgres" database.
 --
--- Run via: npm run db:keepalive (see scripts/setup-keepalive-cron.mjs).
+-- Apply in the Supabase dashboard SQL editor, via psql, or with the helper
+-- script: npx tsx scripts/setup-keepalive-cron.ts
 
 -- pg_cron must be enabled in the Supabase dashboard before this migration can
 -- register jobs. The extension create is included for completeness but, on
