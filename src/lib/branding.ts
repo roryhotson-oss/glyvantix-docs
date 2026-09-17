@@ -53,6 +53,50 @@ const FONT_VALUES = ['serif', 'sans', 'mono'] as const;
 const SLUG_RE = /^[a-z0-9-]+$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+const LOGO_DATA_URL_RE =
+  /^data:(image\/(?:png|jpeg|webp|svg\+xml));base64,([A-Za-z0-9+/]*={0,2})$/;
+
+function hasBytes(bytes: Uint8Array, ...expected: number[]): boolean {
+  return expected.every((byte, index) => bytes[index] === byte);
+}
+
+function isValidLogoDataUrl(value: string): boolean {
+  const match = LOGO_DATA_URL_RE.exec(value);
+  if (!match || match[2].length === 0 || match[2].length % 4 !== 0) return false;
+
+  const bytes = Buffer.from(match[2], 'base64');
+  switch (match[1]) {
+    case 'image/png':
+      return hasBytes(bytes, 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a);
+    case 'image/jpeg':
+      return hasBytes(bytes, 0xff, 0xd8, 0xff);
+    case 'image/webp':
+      return (
+        hasBytes(bytes, 0x52, 0x49, 0x46, 0x46) &&
+        bytes[8] === 0x57 &&
+        bytes[9] === 0x45 &&
+        bytes[10] === 0x42 &&
+        bytes[11] === 0x50
+      );
+    case 'image/svg+xml': {
+      let svg = bytes.toString('utf8').trimStart();
+      if (svg.startsWith('<?xml')) {
+        const declarationEnd = svg.indexOf('?>');
+        if (declarationEnd < 0) return false;
+        svg = svg.slice(declarationEnd + 2).trimStart();
+      }
+      while (svg.startsWith('<!--')) {
+        const commentEnd = svg.indexOf('-->');
+        if (commentEnd < 0) return false;
+        svg = svg.slice(commentEnd + 3).trimStart();
+      }
+      return (
+        /^<svg(?:\s|>)/i.test(svg) &&
+        !/<script\b|on[a-z]+\s*=|javascript:/i.test(svg)
+      );
+    }
+  }
+}
 
 // The list of fields a PUT body is allowed to update.
 const UPDATABLE_KEYS = [
@@ -146,10 +190,14 @@ export function parseBrandingUpdate(
 
   if ('logoUrl' in obj) {
     const v = obj.logoUrl;
-    if (typeof v !== 'string' || v.length > 200_000) {
+    if (
+      typeof v !== 'string' ||
+      v.length > 200_000 ||
+      (v.length > 0 && !isValidLogoDataUrl(v))
+    ) {
       return {
         error:
-          'logoUrl must be a string of at most 200,000 characters (empty string allowed).',
+          'logoUrl must be an empty string or a valid PNG, JPEG, WebP, or SVG image data URL of at most 200,000 characters.',
       };
     }
     data.logoUrl = v;
